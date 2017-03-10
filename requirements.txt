@@ -1,0 +1,4 @@
+feedparser
+jieba
+numpy
+scikit-learn
