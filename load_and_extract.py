@@ -61,6 +61,12 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
+import sys
+import string
+
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 def tfidf_calc():        
     # segments = extract_segments("\n".join(extract_all_text()))
 
@@ -71,14 +77,22 @@ def tfidf_calc():
 
     # vectorizer = CountVectorizer()
     # vectorizer.fit_transform(corpus)
+    
+    with open('stopwords-utf8.txt') as f:
+        content = f.readlines()
 
-    vectorizer = TfidfVectorizer(min_df=1, smooth_idf=False, sublinear_tf=True)
+    content.extend(['来说', '事情', '提供', '带来', '发现'])
+    stopwords = [x.strip().decode('utf-8') for x in content]
+
+    vectorizer = TfidfVectorizer(min_df=1, smooth_idf=False, sublinear_tf=True, stop_words=stopwords)
     vectorizer.fit_transform(corpus)
 
     data = dict(zip(vectorizer.get_feature_names(), vectorizer.idf_))
-    result = DataFrame(data.items(), columns=['word', 'tfidf']).sort_values(by='tfidf', ascending=True).head(32)
+    result = DataFrame(data.items(), columns=['word', 'tfidf']).sort_values(by='tfidf', ascending=True).head(50)
 
-    print(result)
+    result.to_csv('top-50-words-in-tw-insight.csv')
+    # print(result)
+
     # # print vectorizer.vocabulary_
 
     # for key, value in data.iteritems():
