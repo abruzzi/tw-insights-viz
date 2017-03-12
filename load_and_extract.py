@@ -1,17 +1,21 @@
 # encoding=utf-8
 
 import jieba
-import jieba.analyse
 from bs4 import BeautifulSoup
-from collections import Counter
 from pandas import DataFrame
 
 def extract_post_content(file):
-    soup = BeautifulSoup(open(file).read(), "html.parser")
-    return soup.find('div', attrs={'class': 'entry-content'}).text
-    
-def fetch_feeds():
-    return []
+    try:
+        soup = BeautifulSoup(open(file).read(), "html.parser")
+        content = soup.find('div', attrs={'class': 'entry-content'})
+        if content is not None:
+            return content.text
+        else:
+            return ""
+    except Exception as e:
+        return ""
+
+    # return soup.find('div', attrs={'class': 'entry-content'}).text
 
 def extract_segments(data):
     seg_list = jieba.cut(data, cut_all=False)
@@ -31,17 +35,13 @@ def tokenize():
 # print(tokenize())
 
 def extract_all_text():
-    with open('filepaths') as f:
+    with open('icodeit-filepaths') as f:
         content = f.readlines()
 
     file_list = [x.strip() for x in content]
     return map(extract_post_content, file_list)
 
 # print tokenize()
-
-
-def taging(content):
-    return ",".join(jieba.analyse.extract_tags(content, topK=32))
 
 # open('tags', "w").write("\n".join(map(taging, extract_all_text())).encode('utf-8'))
 # for content in extract_all_text():
@@ -59,7 +59,6 @@ from sklearn import feature_extraction
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
-
 
 import sys
 import string
@@ -81,7 +80,8 @@ def tfidf_calc():
     with open('stopwords-utf8.txt') as f:
         content = f.readlines()
 
-    content.extend(['来说', '事情', '提供', '带来', '发现'])
+    content.extend([str(x) for x in range(100)])
+    # content.extend(['来说', '事情', '提供', '带来', '发现'])
     stopwords = [x.strip().decode('utf-8') for x in content]
 
     vectorizer = TfidfVectorizer(min_df=1, smooth_idf=False, sublinear_tf=True, stop_words=stopwords)
@@ -90,7 +90,7 @@ def tfidf_calc():
     data = dict(zip(vectorizer.get_feature_names(), vectorizer.idf_))
     result = DataFrame(data.items(), columns=['word', 'tfidf']).sort_values(by='tfidf', ascending=True).head(50)
 
-    result.to_csv('top-50-words-in-tw-insight.csv')
+    result.to_csv('top-50-words-in-icodeit.csv')
     # print(result)
 
     # # print vectorizer.vocabulary_
